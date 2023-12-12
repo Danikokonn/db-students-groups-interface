@@ -1,4 +1,5 @@
 from .AdminForm import *
+from .HumanResForm import *
 from sqlalchemy import create_engine
 from tkinter import font
 
@@ -17,9 +18,9 @@ class MainForm(Tk):
         self.btn_goto_admin_form.bind("<ButtonRelease>", self.on_btn_goto_admin_form_click)
         self.btn_goto_admin_form.grid(row=2, column=0, rowspan=2, columnspan=4, sticky="W")
 
-        self.btn_goto_ok_form = Button(self, text="Сотрудник отдела кадров", font=font1)
-        self.btn_goto_ok_form.bind("<ButtonRelease>", self.on_btn_goto_ok_form_click)
-        self.btn_goto_ok_form.grid(row=4, column=0, rowspan=2, columnspan=4, sticky="W")
+        self.btn_goto_human_res_form = Button(self, text="Сотрудник отдела кадров", font=font1)
+        self.btn_goto_human_res_form.bind("<ButtonRelease>", self.on_btn_goto_human_res_form_click)
+        self.btn_goto_human_res_form.grid(row=4, column=0, rowspan=2, columnspan=4, sticky="W")
 
         self.btn_goto_dean_form = Button(self, text="Сотрудник деканата", font=font1)
         self.btn_goto_dean_form.bind("<ButtonRelease>", self.on_btn_goto_dean_form_click)
@@ -40,8 +41,10 @@ class MainForm(Tk):
         window.grab_set()
 
 
-    def on_btn_goto_ok_form_click(self, event):
-        pass
+    def on_btn_goto_human_res_form_click(self, event):
+        self.withdraw()
+        window = HumanResForm(self, self.dbengine)
+        window.grab_set()
 
 
     def on_btn_goto_dean_form_click(self, event):

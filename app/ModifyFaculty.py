@@ -16,8 +16,8 @@ class ModifyFaculty(Toplevel):
 
         self.title("Изменение факультета")
 
-        self.btn_del_fac = Button(self, text="Изменить факультет")
-        self.btn_del_fac.bind("<ButtonRelease>", self.on_btn_mod_faculty_clicked,)
+        self.btn_mod_fac = Button(self, text="Изменить факультет")
+        self.btn_mod_fac.bind("<ButtonRelease>", self.on_btn_mod_faculty_clicked,)
 
         self.btn_back = Button(self, text="Назад")
         self.btn_back.bind("<ButtonRelease>", self.on_btn_back_clicked,)
@@ -33,7 +33,7 @@ class ModifyFaculty(Toplevel):
         self.rbuttons = []
         self.tbl_elems = []
 
-        self.lbl_infotitle = Label(self, text="Форма для ввода изменений (оставить поле пустым - не изменить)")
+        self.lbl_infotitle = Label(self, text="Форма для ввода изменений (оставить поле пустым - не изменять)")
 
         self.lbl_id = Label(self, text="Номер факультета")
         self.lbl_id.grid(row=1, column=0)
@@ -91,12 +91,17 @@ class ModifyFaculty(Toplevel):
                 func(self, event, *args, **kwargs)
             except exc.DataError:
                 showerror("Ошибка ввода данных!", "Проверьте корректность ввода данных о факультете!")
+            except exc.IntegrityError as e:
+                if "violates foreign key" in str(e.orig):
+                    showerror("Ошибка изменения факультета!", "Попытка изменить номер факультета, к которому привязаны кафедры!")
+                else:
+                    showerror("Ошибка изменения факультета!", e.orig)
             except IndexError:
-                showerror("Ошибка удаления факультета!", "Отметьте галочкой один факультет, который хотите изменить!")
+                showerror("Ошибка изменения факультета!", "Отметьте галочкой один факультет, который хотите изменить!")
             except ValueError:
                 showwarning("Изменений не произошло!", "Введите изменения в соответсвующие поля!")
             except Exception as e:
-                showerror("Неизвестная ошибка!", e, e.args,)
+                showerror("Неизвестная ошибка!", e.args)
             if self.session.is_active:
                 self.session.close()
         return wrapper
@@ -156,6 +161,12 @@ class ModifyFaculty(Toplevel):
         self.tbl_elems.clear()
         self.rbuttons.clear()
 
+        self.lbl_id.grid(row=1, column=0)
+        self.lbl_fullname.grid(row=1, column=1)
+        self.lbl_address.grid(row=1, column=2)
+        self.lbl_dean_room_num.grid(row=1, column=3)
+        self.lbl_dean_fullname.grid(row=1, column=4)
+
         self.var.set(facs[0].id)
         for idx, fac in enumerate(facs):
             text, value = (fac.id, fac.id)
@@ -167,11 +178,7 @@ class ModifyFaculty(Toplevel):
                 Label(self, text=fac.dean_full_name)
             ]
 
-            self.lbl_id.grid(row=1, column=0)
-            self.lbl_fullname.grid(row=1, column=1)
-            self.lbl_address.grid(row=1, column=2)
-            self.lbl_dean_room_num.grid(row=1, column=3)
-            self.lbl_dean_fullname.grid(row=1, column=4)
+            
             
             self.rbuttons[-1].grid(row=idx+2, column=0)
             for i, lbl in enumerate(entry):
@@ -194,6 +201,6 @@ class ModifyFaculty(Toplevel):
         self.lbldean_fullname.grid(row=last_row+4,column=0)
         self.txtdean_fullname.grid(row=last_row+4,column=1)
 
-        self.btn_del_fac.grid(row=last_row+5, column=0)
+        self.btn_mod_fac.grid(row=last_row+5, column=0)
         self.btn_back.grid(row=last_row+5, column=1)
 

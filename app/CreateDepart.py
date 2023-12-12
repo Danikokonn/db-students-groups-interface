@@ -3,7 +3,6 @@ from tkinter import *
 from tkinter.messagebox import showerror, showinfo
 from sqlalchemy import Engine, exc
 from sqlalchemy.orm import Session, sessionmaker
-from psycopg2.errors import ForeignKeyViolation, UniqueViolation
 
 class CreateDepart(Toplevel):
     def __init__(self, master, engine:Engine):
@@ -84,9 +83,9 @@ class CreateDepart(Toplevel):
             except exc.DataError:
                 showerror("Ошибка ввода данных!", "Проверьте корректность ввода данных о кафедре!")
             except exc.IntegrityError as e:
-                if "violates foreign key" in e.orig:
+                if "violates foreign key" in str(e.orig):
                     showerror("Ошибка добавления Кафедры!", "Попытка привязать кафедру к несуществующему факультету!")
-                elif "violates unique constraint" in e.orig:
+                elif "violates unique constraint" in str(e.orig):
                     showerror("Ошибка добавления Кафедры!", "Кафедра с данным номером уже существует!")
             except Exception as e:
                 showerror("Неизвестная ошибка!", e.args)

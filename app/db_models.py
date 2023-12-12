@@ -18,9 +18,22 @@ class Faculty(Base):
 
     departments: Mapped[List["Department"]] = relationship(back_populates="faculty", cascade="all, delete-orphan")
 
+    refs: dict = {
+        "departments": "departments"
+    }
+
+    fields: dict = {
+        "id": id,
+    }
+
+    def get_id(self):
+        return self.id
+
     def __repr__(self) -> str:
         return f"Faculty(id={self.id!r}, full_name={self.full_name!r}, address={self.address!r}, deans_room_num={self.deans_room_num!r}, dean_full_name={self.dean_full_name!r})"
 
+    def get_name(self):
+        return f"{self.full_name}"
 
 class Department(Base):
     __tablename__ = "departments"
@@ -36,9 +49,24 @@ class Department(Base):
     curators: Mapped[List["Curator"]] = relationship(back_populates="depart")
     groups: Mapped[List["Group"]] = relationship(back_populates="depart")
 
-    def __repr__(self) -> str:
-        return f"Department(id={self.id!r}, full_name={self.full_name!r}, address={self.address!r}, depart_room_num={self.deans_room_num!r}, head_of_depart_full_name={self.dean_full_name!r}, faculty_id={self.faculty_id!r})"
+    refs: dict = {
+        "curators": "curators",
+        "groups": "groups"
+    }
 
+    fields: dict = {
+        "id": id,
+    }
+
+    def get_id(self):
+        return self.id
+
+    def __repr__(self) -> str:
+        return f"Department(id={self.id!r}, full_name={self.full_name!r}, address={self.address!r}, depart_room_num={self.depart_room_num!r}, head_of_depart_full_name={self.head_of_depart_full_name!r}, faculty_id={self.faculty_id!r})"
+
+    def get_name(self):
+        return f"{self.full_name}"
+    
 
 class Curator(Base):
     __tablename__ = "curators"
@@ -53,6 +81,17 @@ class Curator(Base):
     depart: Mapped["Department"] = relationship(back_populates="curators")
     groups: Mapped[List["CuratorsGroups"]] = relationship(back_populates="curator")
 
+    refs: dict = {
+        "groups": "groups"
+    }
+
+    fields: dict = {
+        "id": personnel_number,
+    }
+
+    def get_id(self):
+        return self.personnel_number
+
     def __repr__(self) -> str:
         return f"Curator(personnel_number={self.personnel_number!r}, full_name={self.full_name!r}, job_title={self.job_title!r}, academic_degree={self.academic_degree!r}, phone_number={self.phone_number!r}, depart_id={self.depart_id!r})"
 
@@ -64,6 +103,13 @@ class Speciality(Base):
     full_name: Mapped[str] = mapped_column(String(511))
 
     group: Mapped["Group"] = relationship(back_populates="spec")
+
+    def get_id(self):
+        return self.code
+    
+    fields: dict = {
+        "id": code,
+    }
 
     def __repr__(self) -> str:
         return f"Speciality(code={self.code!r}, full_name={self.full_name!r})"
@@ -84,6 +130,17 @@ class Group(Base):
     curator: Mapped["CuratorsGroups"] = relationship(back_populates="groups")
     students: Mapped[List["Student"]] = relationship(back_populates="group")
 
+    refs: dict = {
+        "students": "students"
+    }
+
+    fields: dict = {
+        "id": id,
+    }
+
+    def get_id(self):
+        return self.id
+
     def __repr__(self) -> str:
         return f"Group(id={self.id!r}, formation_year={self.formation_year!r}, study_year={self.study_year!r}, head_of_group_id={self.head_of_group_id!r}, speciality_code={self.speciality_code!r}, depart_id={self.depart_id!r})"
 
@@ -96,6 +153,10 @@ class CuratorsGroups(Base):
 
     groups: Mapped[List["Group"]] = relationship(back_populates="curator")
     curator: Mapped["Curator"] = relationship(back_populates="groups")
+
+    refs: dict = {
+        "groups": groups
+    }
 
 
 
@@ -116,6 +177,17 @@ class Student(Base):
 
     group: Mapped["Group"] = relationship(back_populates="students")
     documents: Mapped[List["Document"]] = relationship(back_populates="student")
+    
+    def get_id(self):
+        return self.id
+
+    refs: dict = {
+        "documents": "documents"
+    }
+
+    fields: dict = {
+        "id": id,
+    }
 
 
 class Document(Base):
@@ -128,3 +200,10 @@ class Document(Base):
     student_id: Mapped[int] = mapped_column(Integer, ForeignKey('students.id'))
 
     student: Mapped["Student"] = relationship(back_populates="documents")
+
+    def get_id(self):
+        return self.document_number
+    
+    fields: dict = {
+        "id": document_number,
+    }
