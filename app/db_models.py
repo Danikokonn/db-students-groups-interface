@@ -1,8 +1,11 @@
 from typing import List
 from sqlalchemy import String, ForeignKey, LargeBinary, BigInteger, SmallInteger, Integer
-from sqlalchemy.orm import declarative_base, Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, mapped_column, relationship, DeclarativeBase
 
-Base = declarative_base()
+
+class Base(DeclarativeBase):
+    pass
+
 
 class Faculty(Base):
     __tablename__ = "faculties"
@@ -13,7 +16,7 @@ class Faculty(Base):
     deans_room_num: Mapped[int] = mapped_column(SmallInteger)
     dean_full_name: Mapped[str] = mapped_column(String(255))
 
-    departments: Mapped[List["Department"]] = relationship(back_populates="faculty")
+    departments: Mapped[List["Department"]] = relationship(back_populates="faculty", cascade="all, delete-orphan")
 
     def __repr__(self) -> str:
         return f"Faculty(id={self.id!r}, full_name={self.full_name!r}, address={self.address!r}, deans_room_num={self.deans_room_num!r}, dean_full_name={self.dean_full_name!r})"
@@ -37,7 +40,7 @@ class Department(Base):
         return f"Department(id={self.id!r}, full_name={self.full_name!r}, address={self.address!r}, depart_room_num={self.deans_room_num!r}, head_of_depart_full_name={self.dean_full_name!r}, faculty_id={self.faculty_id!r})"
 
 
-class Curator:
+class Curator(Base):
     __tablename__ = "curators"
 
     personnel_number: Mapped[int] = mapped_column(SmallInteger, primary_key=True)
@@ -54,7 +57,7 @@ class Curator:
         return f"Curator(personnel_number={self.personnel_number!r}, full_name={self.full_name!r}, job_title={self.job_title!r}, academic_degree={self.academic_degree!r}, phone_number={self.phone_number!r}, depart_id={self.depart_id!r})"
 
 
-class Speciality:
+class Speciality(Base):
     __tablename__ = "specialties"
 
     code: Mapped[str] = mapped_column(String(12), primary_key=True)
@@ -66,7 +69,7 @@ class Speciality:
         return f"Speciality(code={self.code!r}, full_name={self.full_name!r})"
 
 
-class Group:
+class Group(Base):
     __tablename__ = "groups"
 
     id: Mapped[int] = mapped_column(SmallInteger, primary_key=True)
@@ -85,7 +88,7 @@ class Group:
         return f"Group(id={self.id!r}, formation_year={self.formation_year!r}, study_year={self.study_year!r}, head_of_group_id={self.head_of_group_id!r}, speciality_code={self.speciality_code!r}, depart_id={self.depart_id!r})"
 
 
-class CuratorsGroups:
+class CuratorsGroups(Base):
     __tablename__ = "curators_groups"
 
     personnel_number: Mapped[int] = mapped_column(SmallInteger, ForeignKey('curators.personnel_number'), primary_key=True)
@@ -96,7 +99,7 @@ class CuratorsGroups:
 
 
 
-class Student:
+class Student(Base):
     __tablename__ = "students"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -115,7 +118,7 @@ class Student:
     documents: Mapped[List["Document"]] = relationship(back_populates="student")
 
 
-class Document:
+class Document(Base):
     __tablename__ = "documents"
 
     document_number: Mapped[int] = mapped_column(BigInteger, primary_key=True)
