@@ -42,7 +42,7 @@ class TreeViewRead(Toplevel):
         self.btn_back.bind("<ButtonRelease>", self.on_btn_back_clicked,)
 
         self.session = sessionmaker(bind=self.dbengine)()
-        stmt = select(Faculty).order_by(Faculty.fields["id"])
+        stmt = select(Faculty).order_by(Faculty.id)
         rows = self.session.scalars(stmt).all()
 
         self.populate_node("", rows)

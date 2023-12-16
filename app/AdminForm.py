@@ -1,9 +1,6 @@
-from .CreateFaculty import *
-from .ModifyFaculty import *
-from .DeleteFaculty import *
-from .CreateDepart import *
-from .ModifyDepart import *
-from .DeleteDepart import *
+from .CreateForm import *
+from .ModifyForm import *
+from .DeleteForm import *
 
 class AdminForm(Toplevel):
     def __init__(self, master, engine:Engine):
@@ -50,38 +47,38 @@ class AdminForm(Toplevel):
     # Обработчики faculty
     def on_btn_goto_create_faculty_click(self, event):
         self.withdraw()
-        window = CreateFaculty(self, self.dbengine)
+        window = CreateForm(self, self.dbengine, Faculty)
         window.grab_set()
 
 
     def on_btn_goto_mod_faculty_click(self, event):
         self.withdraw()
-        window = ModifyFaculty(self, self.dbengine)
+        window = ModifyForm(self, self.dbengine, Faculty)
         window.grab_set()
 
 
     def on_btn_goto_del_faculty_click(self, event):
         self.withdraw()
-        window = DeleteFaculty(self, self.dbengine)
+        window = DeleteForm(self, self.dbengine, Faculty)
         window.grab_set()
 
 
     # Обработчики depart
     def on_btn_goto_create_depart_click(self, event):
         self.withdraw()
-        window = CreateDepart(self, self.dbengine)
+        window = CreateForm(self, self.dbengine, Department)
         window.grab_set()
 
 
     def on_btn_goto_mod_depart_click(self, event):
         self.withdraw()
-        window = ModifyDepart(self, self.dbengine)
+        window = ModifyForm(self, self.dbengine, Department)
         window.grab_set()
 
 
     def on_btn_goto_del_depart_click(self, event):
         self.withdraw()
-        window = DeleteDepart(self, self.dbengine)
+        window = DeleteForm(self, self.dbengine, Department)
         window.grab_set()
 
 
