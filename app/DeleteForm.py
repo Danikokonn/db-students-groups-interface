@@ -5,7 +5,7 @@ from sqlalchemy import Engine, exc, select
 from sqlalchemy.orm import Session, sessionmaker
 
 class DeleteForm(Toplevel):
-    def __init__(self, master, engine:Engine, cls):
+    def __init__(self, master, engine:Engine, cls, *args, **kwargs):
         super().__init__(master)
         
         self.dbengine = engine
@@ -59,10 +59,11 @@ class DeleteForm(Toplevel):
         obj = self.session.get(self.current_class, self.var_deleted.get())
         self.session.delete(obj)
         self.session.commit()
+        showinfo("Операция выполнена успешно!", "Объект успешно удалён!")
         for widget in self.winfo_children():
             widget.grid_forget()
         self.on_open()
-        showinfo("Операция выполнена успешно!", "Объект успешно удалён!")
+        
         
 
     def on_btn_back_clicked(self, event):

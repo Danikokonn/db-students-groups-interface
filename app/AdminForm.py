@@ -1,6 +1,7 @@
 from .CreateForm import *
 from .ModifyForm import *
 from .DeleteForm import *
+from .LinkForm import *
 
 class AdminForm(Toplevel):
     def __init__(self, master, engine:Engine):
@@ -12,77 +13,62 @@ class AdminForm(Toplevel):
 
         self.title("Окно администратора")
 
-        # Кнопки faculty
-        self.btn_goto_crt_faculty = Button(self, text="Создание факультета")
-        self.btn_goto_crt_faculty.bind("<ButtonRelease>", self.on_btn_goto_create_faculty_click)
-        self.btn_goto_crt_faculty.grid(row=0, column=0)
+        self.form_types = [ CreateForm, ModifyForm, DeleteForm ]
+        self.op_names = [ "Создать", "Изменить", "Удалить" ]
+        self.models = [ Faculty, Department, Curator, Group, Student, Passport, Speciality ]
 
-        self.btn_goto_mod_faculty = Button(self, text="Изменение факультета")
-        self.btn_goto_mod_faculty.bind("<ButtonRelease>", self.on_btn_goto_mod_faculty_click)
-        self.btn_goto_mod_faculty.grid(row=1, column=0)
+        self.h_frame = Frame(self)
+        self.f_top = Frame(self)
+        self.f_bot = Frame(self)
+        self.b_frame = Frame(self)
 
-        self.btn_goto_del_faculty = Button(self, text="Удаление факультета")
-        self.btn_goto_del_faculty.bind("<ButtonRelease>", self.on_btn_goto_del_faculty_click)
-        self.btn_goto_del_faculty.grid(row=2, column=0)
+        self.h_frame.pack(side=TOP, fill=X, pady=10)
+        self.f_top.pack(side=TOP, expand=1, fill=BOTH, pady=10)
+        self.f_bot.pack(side=TOP, expand=1, fill=BOTH, pady=10)
+        self.b_frame.pack(side=TOP, fill=X, pady=10)
 
-        # Кнопки depart
-        self.btn_goto_crt_depart = Button(self, text="Создание кафедры")
-        self.btn_goto_crt_depart.bind("<ButtonRelease>", self.on_btn_goto_create_depart_click)
-        self.btn_goto_crt_depart.grid(row=0, column=1)
+        self.lbl_head = Label(self.h_frame, text="Окно администратора\nВыберите действие с каким либо объектом")
+        self.lbl_head.pack(side=TOP, expand=1, fill=BOTH)
 
-        self.btn_goto_mod_depart = Button(self, text="Изменение кафедры")
-        self.btn_goto_mod_depart.bind("<ButtonRelease>", self.on_btn_goto_mod_depart_click)
-        self.btn_goto_mod_depart.grid(row=1, column=1)
-
-        self.btn_goto_del_depart = Button(self, text="Удаление кафедры")
-        self.btn_goto_del_depart.bind("<ButtonRelease>", self.on_btn_goto_del_depart_click)
-        self.btn_goto_del_depart.grid(row=2, column=1)
-
-        # Общие кнопки
         self.btn_back = Button(self, text="Назад")
         self.btn_back.bind("<ButtonRelease>", self.on_btn_back_clicked)
-        self.btn_back.grid(row=3, column=0)
+        self.btn_back.pack(side=LEFT, expand=1, anchor=W, pady=10)
 
+        self.frames = []
 
-    # Обработчики faculty
-    def on_btn_goto_create_faculty_click(self, event):
+        for _ in range(4):
+            self.frames.append(Frame(self.f_top))
+            self.frames[-1].pack(side=LEFT, expand=1, fill=X, padx=15)
+
+        for _ in range(4):
+            self.frames.append(Frame(self.f_bot))
+            self.frames[-1].pack(side=LEFT, expand=1, fill=X, padx=15)
+
+        self.goto_buttons = []
+        self.lbls = []
+
+        for i, model in enumerate(self.models):
+            self.lbls.append(Label(self.frames[i], text=model.desc))
+            self.lbls[-1].pack(side=TOP, expand=1, fill=X)
+            for j, op in enumerate(self.form_types):
+                self.goto_buttons.append(Button(self.frames[i], text=self.op_names[j]))
+                self.goto_buttons[-1].bind("<ButtonRelease>", lambda event, arg={"form_type": op, "cls": model}: self.on_btn_goto_click(event, arg))
+                self.goto_buttons[-1].pack(side=TOP, expand=1, fill=X)
+
+        self.lbls.append(Label(self.frames[-1], text=f"Кураторы-Группы"))
+        self.lbls[-1].pack(side=TOP, expand=1, fill=X)
+        self.goto_buttons.append(Button(self.frames[-1], text="Связать"))
+        self.goto_buttons[-1].bind("<ButtonRelease>", lambda event, arg={"form_type": LinkForm, "cls": Curator, "cls2": Group}: self.on_btn_goto_click(event, arg))
+        self.goto_buttons[-1].pack(side=TOP, expand=1, fill=X)
+
+        
+
+    def on_btn_goto_click(self, event, arg):
         self.withdraw()
-        window = CreateForm(self, self.dbengine, Faculty)
+        window = arg["form_type"](self, self.dbengine, arg["cls"], arg["cls2"] if "cls2" in arg.keys() else None)
         window.grab_set()
 
 
-    def on_btn_goto_mod_faculty_click(self, event):
-        self.withdraw()
-        window = ModifyForm(self, self.dbengine, Faculty)
-        window.grab_set()
-
-
-    def on_btn_goto_del_faculty_click(self, event):
-        self.withdraw()
-        window = DeleteForm(self, self.dbengine, Faculty)
-        window.grab_set()
-
-
-    # Обработчики depart
-    def on_btn_goto_create_depart_click(self, event):
-        self.withdraw()
-        window = CreateForm(self, self.dbengine, Department)
-        window.grab_set()
-
-
-    def on_btn_goto_mod_depart_click(self, event):
-        self.withdraw()
-        window = ModifyForm(self, self.dbengine, Department)
-        window.grab_set()
-
-
-    def on_btn_goto_del_depart_click(self, event):
-        self.withdraw()
-        window = DeleteForm(self, self.dbengine, Department)
-        window.grab_set()
-
-
-    # Общие обработчики
     def on_btn_back_clicked(self, event):
         self.on_closing(event)
 

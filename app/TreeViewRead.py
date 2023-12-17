@@ -19,12 +19,29 @@ class TreeViewRead(Toplevel):
 
         self.title("Просмотр данных")
 
-        self.tree_view = Treeview(self)
+        self.f_head = Frame(self)
+        self.f_view = Frame(self)
+        self.f_bot = Frame(self)
+
+        self.f_head.pack(side=TOP, fill=X, pady=5)
+        self.f_view.pack(side=TOP, expand=1, fill=BOTH, pady=5)
+        self.f_bot.pack(side=TOP, fill=X, pady=5)
+
+        self.lbl_head = Label(self.f_head, text="Окно просмотра")
+        self.lbl_head.pack(side=TOP, expand=1)
+
+        self.subframe1 = Frame(self.f_view)
+        self.subframe2 = Frame(self.f_view)
+        self.subframe1.pack(side=LEFT, fill=BOTH, expand=1)
+        self.subframe2.pack(side=LEFT, fill=Y)
+
+        self.tree_view = Treeview(self.subframe1)
         self.tree_view.heading("#0", text="База данных группы-студенты", anchor=W)
 
-        self.ysb = Scrollbar(self, orient=VERTICAL,
+
+        self.ysb = Scrollbar(self.subframe2, orient=VERTICAL,
                             command=self.tree_view.yview)
-        self.xsb = Scrollbar(self, orient=HORIZONTAL,
+        self.xsb = Scrollbar(self.subframe1, orient=HORIZONTAL,
                             command=self.tree_view.xview)
         self.tree_view.configure(yscroll=self.ysb.set, xscroll=self.xsb.set)
 
@@ -32,14 +49,13 @@ class TreeViewRead(Toplevel):
         self.tree_view.bind("<<TreeviewOpen>>", self.open_node)
         
 
-        self.tree_view.grid(row=0, column=0, sticky=N + S + E + W)
-        self.ysb.grid(row=0, column=1, sticky=N + S)
-        self.xsb.grid(row=1, column=0, sticky=E + W)
-        self.rowconfigure(0, weight=1)
-        self.columnconfigure(0, weight=1)
+        self.tree_view.pack(side=TOP, expand=1, fill=BOTH)
+        self.xsb.pack(side=BOTTOM, fill=X)
+        self.ysb.pack(side=LEFT, fill=Y)
 
-        self.btn_back = Button(self, text="Назад")
-        self.btn_back.bind("<ButtonRelease>", self.on_btn_back_clicked,)
+        self.btn_back = Button(self.f_bot, text="Назад")
+        self.btn_back.bind("<ButtonRelease>", self.on_btn_back_clicked)
+        self.btn_back.pack(side=LEFT)
 
         self.session = sessionmaker(bind=self.dbengine)()
         stmt = select(Faculty).order_by(Faculty.id)
@@ -60,9 +76,8 @@ class TreeViewRead(Toplevel):
     def populate_node(self, parent, rows):
         for entry in rows:
             node = self.tree_view.insert(parent, END, text=entry.get_name(), open=False)
-            keys =  entry.refs.keys()
             self.nodes[node] = []
-            for key in keys:
+            for key in entry.refs:
                 if len(getattr(entry, key)):
                     self.nodes[node].append(getattr(entry, key))
                     self.tree_view.insert(node, END)

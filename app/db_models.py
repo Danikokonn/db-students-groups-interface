@@ -1,5 +1,5 @@
 from typing import List
-from sqlalchemy import String, ForeignKey, LargeBinary, BigInteger, SmallInteger, Integer, Date
+from sqlalchemy import Column, String, ForeignKey, LargeBinary, BigInteger, SmallInteger, Integer, Date, Table
 from sqlalchemy.orm import Mapped, mapped_column, relationship, DeclarativeBase, synonym
 
 
@@ -88,6 +88,11 @@ class Department(Base):
         return f"{self.full_name}"
     
 
+CuratorsGroups = Table('curators_groups', Base.metadata,
+    Column('personnel_number', SmallInteger, ForeignKey('curators.personnel_number')),
+    Column('group_id', SmallInteger, ForeignKey('groups.id')), schema='accounting')
+
+
 class Curator(Base):
     __tablename__ = "curators"
 
@@ -102,18 +107,27 @@ class Curator(Base):
     depart_id: Mapped[int] = mapped_column(SmallInteger,ForeignKey('departments.id'))
 
     depart: Mapped["Department"] = relationship(back_populates="curators")
-    groups: Mapped[List["CuratorsGroups"]] = relationship(back_populates="curator")
+    #groups: Mapped[List["CuratorsGroups"]] = relationship(back_populates="curator")
+    groups: Mapped[List["Group"]] = relationship('Group', secondary=CuratorsGroups, back_populates="curator")
 
     refs: list[str] = ["groups",]
 
     field_names: dict = {
-        "id": "Табельный номер",
+        "personnel_number": "Табельный номер",
         "full_name": "ФИО",
         "job_title": "Должность",
         "academic_degree": "Степень",
         "phone_number": "Телефон",
         "email": "Email",
         "depart_id": "Номер кафедры",
+    }
+
+    linked_fields: dict = {
+        "Group": "groups"
+    }
+
+    link_types: dict = {
+        "groups": "one_to_many"
     }
     
     id_attr = "personnel_number"
@@ -122,8 +136,13 @@ class Curator(Base):
     def get_id(self):
         return self.personnel_number
 
+
     def __repr__(self) -> str:
         return f"Curator(personnel_number={self.personnel_number!r}, full_name={self.full_name!r}, job_title={self.job_title!r}, academic_degree={self.academic_degree!r}, phone_number={self.phone_number!r}, depart_id={self.depart_id!r})"
+
+
+    def get_name(self):
+        return f"{self.full_name}"
 
 
 class Speciality(Base):
@@ -138,7 +157,7 @@ class Speciality(Base):
 
     field_names: dict = {
         "code": "Код специальности",
-        "full_name": "Год Название",
+        "full_name": "Название",
     }
     
     id_attr = "code"
@@ -150,6 +169,10 @@ class Speciality(Base):
 
     def __repr__(self) -> str:
         return f"Speciality(code={self.code!r}, full_name={self.full_name!r})"
+    
+
+    def get_name(self):
+        return f"{self.full_name}"
 
 
 class Group(Base):
@@ -166,7 +189,8 @@ class Group(Base):
 
     depart: Mapped["Department"] = relationship(back_populates="groups")
     spec: Mapped["Speciality"] = relationship(back_populates="group")
-    curator: Mapped["CuratorsGroups"] = relationship(back_populates="groups")
+    #curator: Mapped["CuratorsGroups"] = relationship(back_populates="groups")
+    curator: Mapped["Curator"] = relationship('Curator', secondary=CuratorsGroups, back_populates="groups")
     students: Mapped[List["Student"]] = relationship(back_populates="group")
 
     refs: list[str] = ["students",]
@@ -180,6 +204,14 @@ class Group(Base):
         "depart_id": "Номер кафедры",
     }
     
+    linked_fields: dict = {
+        "Curator": "curator"
+    }
+
+    link_types: dict = {
+        "curator": "many_to_one"
+    }
+
     id_attr = "id"
 
     def get_id(self):
@@ -189,6 +221,11 @@ class Group(Base):
         return f"Group(id={self.id!r}, formation_year={self.formation_year!r}, study_year={self.study_year!r}, head_of_group_id={self.head_of_group_id!r}, speciality_code={self.speciality_code!r}, depart_id={self.depart_id!r})"
 
 
+    def get_name(self):
+        return f"{self.id}"
+
+
+'''
 class CuratorsGroups(Base):
     __tablename__ = "curators_groups"
 
@@ -202,6 +239,18 @@ class CuratorsGroups(Base):
 
     refs: list[str] = ["groups",]
 
+    field_names: dict = {
+        "group_id": "Номер группы",
+        "personnel_number": "Табельный номер",
+    }
+
+    id = synonym("group_id")
+    id_attr = "group_id"
+
+
+    def get_name(self):
+        return f"{self.group_id}"
+'''
 
 
 class Student(Base):
@@ -231,8 +280,8 @@ class Student(Base):
         "id": "Номер зачётки",
         "full_name": "ФИО",
         "payment_basis": "Бюджетная основа",
-        "living_address": "ИНН",
-        "inn": "Адрес фактического проживания",
+        "living_address": "Адрес фактического проживания",
+        "inn": "ИНН",
         "email": "Email",
         "phone_number": "Номер телефона",
         "phone_number_parent_1": "Телефон родителя 1",
@@ -246,6 +295,10 @@ class Student(Base):
 
     def get_id(self):
         return self.id
+    
+
+    def get_name(self):
+        return f"{self.full_name}"
 
 
 class Passport(Base):
@@ -262,6 +315,8 @@ class Passport(Base):
 
     student: Mapped["Student"] = relationship(back_populates="passport")
 
+    refs = []
+
     field_names: dict = {
         "document_number": "Номер",
         "issue_date": "Дата выдачи",
@@ -276,3 +331,12 @@ class Passport(Base):
 
     def get_id(self):
         return self.document_number
+    
+
+    def get_name(self):
+        return f"""Номер: {self.document_number}
+Серия: {self.series}
+Дата выдачи: {self.issue_date}
+Код подразделения: {self.depart_code}
+Адрес регистрации: {self.registration_address}
+"""

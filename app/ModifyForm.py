@@ -5,7 +5,7 @@ from sqlalchemy import Engine, exc, select
 from sqlalchemy.orm import Session, sessionmaker
 
 class ModifyForm(Toplevel):
-    def __init__(self, master, engine:Engine, cls):
+    def __init__(self, master, engine:Engine, cls, *args, **kwargs):
         super().__init__(master)
         
         self.dbengine = engine
@@ -92,6 +92,8 @@ class ModifyForm(Toplevel):
 
         self.session.commit()
 
+        showinfo("Операция выполнена успешно!", "Объект успешно изменён!")
+
         # Очистка ввода
         for k in self.current_class.field_names.keys():
             self.str_vars[k].set('')
@@ -101,7 +103,7 @@ class ModifyForm(Toplevel):
 
         self.on_open()
 
-        showinfo("Операция выполнена успешно!", "Объект успешно изменён!")
+        
         
 
     def on_btn_back_clicked(self, event):

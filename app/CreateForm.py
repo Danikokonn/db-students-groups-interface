@@ -5,7 +5,7 @@ from sqlalchemy import Engine, exc
 from sqlalchemy.orm import Session, sessionmaker
 
 class CreateForm(Toplevel):
-    def __init__(self, master, engine:Engine, cls):
+    def __init__(self, master, engine:Engine, cls, *args, **kwargs):
         super().__init__(master)
         
         self.dbengine = engine
