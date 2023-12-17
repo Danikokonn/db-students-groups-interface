@@ -58,8 +58,7 @@ create table accounting.groups
 create table accounting.curators_groups
 (
 	personnel_number smallint REFERENCES accounting.curators (personnel_number),
-	group_id smallint REFERENCES accounting.groups (id),
-	primary key (personnel_number,group_id)
+	group_id smallint REFERENCES accounting.groups (id)
 );
 
 create table accounting.students
