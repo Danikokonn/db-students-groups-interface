@@ -5,7 +5,7 @@ from sqlalchemy import Engine, exc, select
 from sqlalchemy.orm import Session, sessionmaker
 
 class ModifyForm(Toplevel):
-    def __init__(self, master, engine:Engine, cls, *args, **kwargs):
+    def __init__(self, master, engine:Engine, cls=None, obj=None, *args, **kwargs):
         super().__init__(master)
         
         self.dbengine = engine
@@ -13,6 +13,8 @@ class ModifyForm(Toplevel):
         self.session:Session = None
 
         self.current_class = cls
+
+        self.current_obj = obj
 
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
 

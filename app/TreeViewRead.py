@@ -6,7 +6,7 @@ from sqlalchemy import Engine, exc, select
 from sqlalchemy.orm import Session, sessionmaker
 
 class TreeViewRead(Toplevel):
-    def __init__(self, master, engine:Engine):
+    def __init__(self, master, engine:Engine, cls, obj = None):
         super().__init__(master)
         
         self.dbengine = engine
@@ -18,6 +18,10 @@ class TreeViewRead(Toplevel):
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
 
         self.title("Просмотр данных")
+
+        self.current_cls = cls
+
+        self.current_obj = obj
 
         self.f_head = Frame(self)
         self.f_view = Frame(self)
@@ -58,8 +62,12 @@ class TreeViewRead(Toplevel):
         self.btn_back.pack(side=LEFT)
 
         self.session = sessionmaker(bind=self.dbengine)()
-        stmt = select(Faculty).order_by(Faculty.id)
-        rows = self.session.scalars(stmt).all()
+
+        if self.current_obj is not None:
+            rows = [self.session.get(self.current_cls, self.current_obj.id),]
+        else:
+            stmt = select(self.current_cls).order_by(self.current_cls.id)
+            rows = self.session.scalars(stmt)
 
         self.populate_node("", rows)
         

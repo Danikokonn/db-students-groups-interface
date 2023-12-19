@@ -1,8 +1,9 @@
 from .AdminForm import *
 from .HumanResForm import *
+from .HeadOfDepartForm import *
+from .DeanForm import *
 from sqlalchemy import create_engine
 from tkinter import font
-from tkinter import ttk
 
 
 class MainForm(Tk):
@@ -55,11 +56,17 @@ class MainForm(Tk):
         window = HumanResForm(self, self.dbengine)
         window.grab_set()
 
+    
+    def on_btn_goto_head_of_depart_form_click(self, event):
+        self.withdraw()
+        window = ChooseDepartForm(self, self.dbengine)
+        window.grab_set()
+
 
     def on_btn_goto_dean_form_click(self, event):
-        pass
+        self.withdraw()
+        window = ChooseDeanForm(self, self.dbengine)
+        window.grab_set()
 
 
-    def on_btn_goto_head_of_depart_form_click(self, event):
-        pass
 

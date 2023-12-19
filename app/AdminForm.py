@@ -60,12 +60,15 @@ class AdminForm(Toplevel):
         self.goto_buttons.append(Button(self.frames[-1], text="Связать"))
         self.goto_buttons[-1].bind("<ButtonRelease>", lambda event, arg={"form_type": LinkForm, "cls": Curator, "cls2": Group}: self.on_btn_goto_click(event, arg))
         self.goto_buttons[-1].pack(side=TOP, expand=1, fill=X)
+        self.goto_buttons.append(Button(self.frames[-1], text="Отвязать"))
+        self.goto_buttons[-1].bind("<ButtonRelease>", lambda event, arg={"form_type": RemoveLinkForm, "cls": Curator, "cls2": Group}: self.on_btn_goto_click(event, arg))
+        self.goto_buttons[-1].pack(side=TOP, expand=1, fill=X)
 
         
 
     def on_btn_goto_click(self, event, arg):
         self.withdraw()
-        window = arg["form_type"](self, self.dbengine, arg["cls"], arg["cls2"] if "cls2" in arg.keys() else None)
+        window = arg["form_type"](self, self.dbengine, cls=arg["cls"], cls2=arg["cls2"] if "cls2" in arg.keys() else None)
         window.grab_set()
 
 

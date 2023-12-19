@@ -42,7 +42,7 @@ class HumanResForm(Toplevel):
     # Обработчик treeview
     def on_btn_goto_treeview_click(self, event):
         self.withdraw()
-        window = TreeViewRead(self, self.dbengine)
+        window = TreeViewRead(self, self.dbengine, Faculty)
         window.grab_set()
 
 
