@@ -13,3 +13,4 @@ DBSCHEMA = "accounting"
 if __name__ == "__main__":
     app = MainForm(DBENGINE, DBLOGIN, DBPASSWORD, DBHOST, DBPORT, DBNAME, DBSCHEMA)
     app.mainloop()
+
