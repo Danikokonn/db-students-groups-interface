@@ -1,7 +1,6 @@
 from .db_models import *
 from tkinter import *
 from tkinter.ttk import Treeview, Scrollbar
-from tkinter.messagebox import showerror, showinfo, showwarning
 from sqlalchemy import Engine, exc, select
 from sqlalchemy.orm import Session, sessionmaker
 
@@ -83,7 +82,11 @@ class TreeViewRead(Toplevel):
     
     def populate_node(self, parent, rows):
         for entry in rows:
-            node = self.tree_view.insert(parent, END, text=entry.get_name(), open=False)
+            if entry.have_name:
+                node = self.tree_view.insert(parent, END, text=entry.get_name(), open=False)
+            else:
+                for v in entry.get_values():
+                    node = self.tree_view.insert(parent, END, text=v, open=False)
             self.nodes[node] = []
             for key in entry.refs:
                 if len(getattr(entry, key)):

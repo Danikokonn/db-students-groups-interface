@@ -88,3 +88,4 @@ create table accounting.passport_data
 	student_id integer REFERENCES accounting.students (id),
 	primary key (document_number)
 );
+
