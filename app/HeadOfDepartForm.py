@@ -8,29 +8,35 @@ from sqlalchemy.orm import Session, sessionmaker
 
 
 class ChooseDepartForm(Toplevel):
-    def __init__(self, master, engine:Engine, *args, **kwargs):
+    def __init__(self, master, engine: Engine, *args, **kwargs):
         super().__init__(master)
-        
+
         self.dbengine = engine
 
-        self.session:Session = None
+        self.session: Session = None
 
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
 
         self.title(f"Выбор кафедры")
 
         self.btn_confirm = Button(self, text=f"Перейти к кафедре")
-        self.btn_confirm.bind("<ButtonRelease>", self.on_btn_confirm_clicked,)
+        self.btn_confirm.bind(
+            "<ButtonRelease>",
+            self.on_btn_confirm_clicked,
+        )
 
         self.btn_back = Button(self, text="Назад")
-        self.btn_back.bind("<ButtonRelease>", self.on_btn_back_clicked,)
+        self.btn_back.bind(
+            "<ButtonRelease>",
+            self.on_btn_back_clicked,
+        )
 
         self.var_selected = StringVar()
 
         self.rbuttons = []
         self.tbl_elems = []
 
-        self.lbls_head:dict[str, Label] = {} # Метки шапки таблицы
+        self.lbls_head: dict[str, Label] = {}  # Метки шапки таблицы
 
         for idx, k in enumerate(Department.field_names.keys()):
             if idx > 1:
@@ -39,7 +45,6 @@ class ChooseDepartForm(Toplevel):
             self.lbls_head[k].grid(row=1, column=idx)
 
         self.after_idle(self.on_open)
-
 
     def session_manager(func):
         def wrapper(self, event=None, *args, **kwargs):
@@ -54,8 +59,8 @@ class ChooseDepartForm(Toplevel):
                 showerror("Неизвестная ошибка!", e.args)
             if self.session.is_active:
                 self.session.close()
-        return wrapper
 
+        return wrapper
 
     @session_manager
     def on_btn_confirm_clicked(self, event):
@@ -63,17 +68,14 @@ class ChooseDepartForm(Toplevel):
         self.withdraw()
         window = HeadOfDepartForm(self, self.dbengine, obj)
         window.grab_set()
-        
-        
+
     def on_btn_back_clicked(self, event):
         self.on_closing(event)
-
 
     def on_closing(self, event=None):
         self.master.deiconify()
         self.destroy()
 
-    
     @session_manager
     def on_open(self, event=None):
         stmt = select(Department).order_by(Department.id)
@@ -89,14 +91,16 @@ class ChooseDepartForm(Toplevel):
         self.var_selected.set(objs[0].id)
         for idx, obj in enumerate(objs):
             text, value = (obj.id, obj.id)
-            self.rbuttons.append(Radiobutton(self, text=text, value=value, variable=self.var_selected))
+            self.rbuttons.append(
+                Radiobutton(self, text=text, value=value, variable=self.var_selected)
+            )
             entry = Label(self, text=obj.full_name)
-            
-            self.rbuttons[-1].grid(row=idx+1, column=0)
-            entry.grid(row=idx+1, column=1)
+
+            self.rbuttons[-1].grid(row=idx + 1, column=0)
+            entry.grid(row=idx + 1, column=1)
 
             self.tbl_elems.append(entry)
-        
+
         last_row = len(objs) + 8
 
         self.btn_confirm.grid(row=last_row, column=0)
@@ -104,10 +108,10 @@ class ChooseDepartForm(Toplevel):
 
 
 class HeadOfDepartForm(Toplevel):
-    def __init__(self, master, engine:Engine, obj: Department):
+    def __init__(self, master, engine: Engine, obj: Department):
         super().__init__(master)
 
-        self.dbengine=engine
+        self.dbengine = engine
 
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
 
@@ -123,7 +127,10 @@ class HeadOfDepartForm(Toplevel):
         self.f_top.pack(side=TOP, expand=1, fill=BOTH, pady=10)
         self.f_bot.pack(side=TOP, fill=X, pady=10)
 
-        self.lbl_head = Label(self.h_frame, text=f"Окно заведующего кафедрой {self.current_obj.full_name}\nВыберите действие")
+        self.lbl_head = Label(
+            self.h_frame,
+            text=f"Окно заведующего кафедрой {self.current_obj.full_name}\nВыберите действие",
+        )
         self.lbl_head.pack(side=TOP, expand=1, fill=X, padx=10)
 
         # Кнопка treeview
@@ -134,17 +141,30 @@ class HeadOfDepartForm(Toplevel):
         self.lbl_lnk = Label(self.f_bot, text=f"Кураторы-Группы")
         self.lbl_lnk.pack(side=TOP, expand=1, fill=X)
         self.btn_lnk = Button(self.f_bot, text="Связать")
-        self.btn_lnk.bind("<ButtonRelease>", lambda event, arg={"form_type": LinkForm, "cls": Curator, "cls2": Group}: self.on_btn_goto_click(event, arg))
+        self.btn_lnk.bind(
+            "<ButtonRelease>",
+            lambda event, arg={
+                "form_type": LinkForm,
+                "cls": Curator,
+                "cls2": Group,
+            }: self.on_btn_goto_click(event, arg),
+        )
         self.btn_lnk.pack(side=TOP, expand=1, fill=X)
         self.btn_ulnk = Button(self.f_bot, text="Отвязать")
-        self.btn_ulnk.bind("<ButtonRelease>", lambda event, arg={"form_type": RemoveLinkForm, "cls": Curator, "cls2": Group}: self.on_btn_goto_click(event, arg))
+        self.btn_ulnk.bind(
+            "<ButtonRelease>",
+            lambda event, arg={
+                "form_type": RemoveLinkForm,
+                "cls": Curator,
+                "cls2": Group,
+            }: self.on_btn_goto_click(event, arg),
+        )
         self.btn_ulnk.pack(side=TOP, expand=1, fill=X)
 
         # Общие кнопки
         self.btn_back = Button(self.f_bot, text="Назад")
         self.btn_back.bind("<ButtonRelease>", self.on_btn_back_clicked)
         self.btn_back.pack(side=BOTTOM, fill=X, padx=10)
-
 
     # Обработчик treeview
     def on_btn_goto_treeview_click(self, event):
@@ -154,15 +174,19 @@ class HeadOfDepartForm(Toplevel):
 
     def on_btn_goto_click(self, event, arg):
         self.withdraw()
-        window = arg["form_type"](self, self.dbengine, obj=self.current_obj, cls=arg["cls"], cls2=arg["cls2"] if "cls2" in arg.keys() else None)
+        window = arg["form_type"](
+            self,
+            self.dbengine,
+            obj=self.current_obj,
+            cls=arg["cls"],
+            cls2=arg["cls2"] if "cls2" in arg.keys() else None,
+        )
         window.grab_set()
 
     # Общие обработчики
     def on_btn_back_clicked(self, event):
         self.on_closing(event)
 
-
     def on_closing(self, event=None):
         self.master.deiconify()
         self.destroy()
-

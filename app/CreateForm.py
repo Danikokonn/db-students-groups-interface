@@ -4,13 +4,14 @@ from tkinter.messagebox import showerror, showinfo
 from sqlalchemy import Engine, exc
 from sqlalchemy.orm import Session, sessionmaker
 
+
 class CreateForm(Toplevel):
-    def __init__(self, master, engine:Engine, cls=None, obj=None, *args, **kwargs):
+    def __init__(self, master, engine: Engine, cls=None, obj=None, *args, **kwargs):
         super().__init__(master)
-        
+
         self.dbengine = engine
 
-        self.session:Session = None
+        self.session: Session = None
 
         self.current_class = cls
 
@@ -20,11 +21,11 @@ class CreateForm(Toplevel):
 
         self.title(f"Формирование объекта {self.current_class.desc}")
 
-        self.str_vars:dict[str, StringVar] = {} # Строковые буферы для инпутов
-        self.lbls:dict[str, Label] = {} # Метки полей
-        self.txts:dict[str, Entry] = {} # Поля для ввода
-        
-        idx=0
+        self.str_vars: dict[str, StringVar] = {}  # Строковые буферы для инпутов
+        self.lbls: dict[str, Label] = {}  # Метки полей
+        self.txts: dict[str, Entry] = {}  # Поля для ввода
+
+        idx = 0
 
         for idx, k in enumerate(self.current_class.field_names.keys()):
             self.lbls[k] = Label(self, text=self.current_class.field_names[k])
@@ -37,12 +38,11 @@ class CreateForm(Toplevel):
 
         self.btn_create = Button(self, text=f"Создать объект {self.current_class.desc}")
         self.btn_create.bind("<ButtonRelease>", self.on_btn_add_clicked)
-        self.btn_create.grid(row=idx+1,column=0)
+        self.btn_create.grid(row=idx + 1, column=0)
 
         self.btn_back = Button(self, text="Назад")
         self.btn_back.bind("<ButtonRelease>", self.on_btn_back_clicked)
-        self.btn_back.grid(row=idx+1,column=1)
-
+        self.btn_back.grid(row=idx + 1, column=1)
 
     def session_manager(func):
         def wrapper(self, event, *args, **kwargs):
@@ -52,20 +52,27 @@ class CreateForm(Toplevel):
                 func(self, event, *args, **kwargs)
                 showinfo("Операция выполнена успешно!", "Объект успешно создан!")
             except exc.DataError:
-                showerror("Ошибка ввода данных!", "Проверьте корректность ввода данных!")
+                showerror(
+                    "Ошибка ввода данных!", "Проверьте корректность ввода данных!"
+                )
             except exc.IntegrityError as e:
                 if "is not present in table" in str(e.orig):
-                    showerror(f"Ошибка создания!", "Попытка создать объект, связанный с несуществующим объектом!")
+                    showerror(
+                        f"Ошибка создания!",
+                        "Попытка создать объект, связанный с несуществующим объектом!",
+                    )
                 else:
-                    showerror("Ошибка создания!", "Объект с данным номером уже существует!")
+                    showerror(
+                        "Ошибка создания!", "Объект с данным номером уже существует!"
+                    )
                 print(e, e.orig)
             except Exception as e:
                 showerror("Неизвестная ошибка!", e.args)
                 print(e, e.args)
             if self.session.is_active:
                 self.session.close()
-        return wrapper
 
+        return wrapper
 
     @session_manager
     def on_btn_add_clicked(self, event):
@@ -84,12 +91,11 @@ class CreateForm(Toplevel):
 
         # Очистка ввода
         for k in self.current_class.field_names.keys():
-            self.str_vars[k].set('')
-        
+            self.str_vars[k].set("")
+
     def on_btn_back_clicked(self, event):
         self.on_closing(event)
 
     def on_closing(self, event=None):
         self.master.deiconify()
         self.destroy()
-

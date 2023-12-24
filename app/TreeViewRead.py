@@ -4,15 +4,16 @@ from tkinter.ttk import Treeview, Scrollbar
 from sqlalchemy import Engine, exc, select
 from sqlalchemy.orm import Session, sessionmaker
 
+
 class TreeViewRead(Toplevel):
-    def __init__(self, master, engine:Engine, cls, obj = None):
+    def __init__(self, master, engine: Engine, cls, obj=None, cls2=None):
         super().__init__(master)
-        
+
         self.dbengine = engine
 
         self.nodes = {}
 
-        self.session:Session = None
+        self.session: Session = None
 
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
 
@@ -41,16 +42,15 @@ class TreeViewRead(Toplevel):
         self.tree_view = Treeview(self.subframe1)
         self.tree_view.heading("#0", text="База данных группы-студенты", anchor=W)
 
-
-        self.ysb = Scrollbar(self.subframe2, orient=VERTICAL,
-                            command=self.tree_view.yview)
-        self.xsb = Scrollbar(self.subframe1, orient=HORIZONTAL,
-                            command=self.tree_view.xview)
+        self.ysb = Scrollbar(
+            self.subframe2, orient=VERTICAL, command=self.tree_view.yview
+        )
+        self.xsb = Scrollbar(
+            self.subframe1, orient=HORIZONTAL, command=self.tree_view.xview
+        )
         self.tree_view.configure(yscroll=self.ysb.set, xscroll=self.xsb.set)
 
-
         self.tree_view.bind("<<TreeviewOpen>>", self.open_node)
-        
 
         self.tree_view.pack(side=TOP, expand=1, fill=BOTH)
         self.xsb.pack(side=BOTTOM, fill=X)
@@ -63,27 +63,28 @@ class TreeViewRead(Toplevel):
         self.session = sessionmaker(bind=self.dbengine)()
 
         if self.current_obj is not None:
-            rows = [self.session.get(self.current_cls, self.current_obj.id),]
+            rows = [
+                self.session.get(self.current_cls, self.current_obj.id),
+            ]
         else:
             stmt = select(self.current_cls).order_by(self.current_cls.id)
             rows = self.session.scalars(stmt)
 
         self.populate_node("", rows)
-        
 
     def on_btn_back_clicked(self, event):
         self.on_closing(event)
-
 
     def on_closing(self, event=None):
         self.master.deiconify()
         self.destroy()
 
-    
     def populate_node(self, parent, rows):
         for entry in rows:
             if entry.have_name:
-                node = self.tree_view.insert(parent, END, text=entry.get_name(), open=False)
+                node = self.tree_view.insert(
+                    parent, END, text=entry.get_name(), open=False
+                )
             else:
                 for v in entry.get_values():
                     node = self.tree_view.insert(parent, END, text=v, open=False)
@@ -101,6 +102,3 @@ class TreeViewRead(Toplevel):
             self.tree_view.delete(children)
             for l in leafs:
                 self.populate_node(item, l)
-        
-
-        

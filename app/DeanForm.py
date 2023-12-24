@@ -11,29 +11,35 @@ from sqlalchemy.orm import Session, sessionmaker
 
 
 class ChooseDeanForm(Toplevel):
-    def __init__(self, master, engine:Engine, *args, **kwargs):
+    def __init__(self, master, engine: Engine, *args, **kwargs):
         super().__init__(master)
-        
+
         self.dbengine = engine
 
-        self.session:Session = None
+        self.session: Session = None
 
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
 
         self.title(f"Выбор факультета")
 
         self.btn_confirm = Button(self, text=f"Перейти к факультету")
-        self.btn_confirm.bind("<ButtonRelease>", self.on_btn_confirm_clicked,)
+        self.btn_confirm.bind(
+            "<ButtonRelease>",
+            self.on_btn_confirm_clicked,
+        )
 
         self.btn_back = Button(self, text="Назад")
-        self.btn_back.bind("<ButtonRelease>", self.on_btn_back_clicked,)
+        self.btn_back.bind(
+            "<ButtonRelease>",
+            self.on_btn_back_clicked,
+        )
 
         self.var_selected = StringVar()
 
         self.rbuttons = []
         self.tbl_elems = []
 
-        self.lbls_head:dict[str, Label] = {} # Метки шапки таблицы
+        self.lbls_head: dict[str, Label] = {}  # Метки шапки таблицы
 
         for idx, k in enumerate(Faculty.field_names.keys()):
             if idx > 1:
@@ -42,7 +48,6 @@ class ChooseDeanForm(Toplevel):
             self.lbls_head[k].grid(row=1, column=idx)
 
         self.after_idle(self.on_open)
-
 
     def session_manager(func):
         def wrapper(self, event=None, *args, **kwargs):
@@ -57,8 +62,8 @@ class ChooseDeanForm(Toplevel):
                 showerror("Неизвестная ошибка!", e.args)
             if self.session.is_active:
                 self.session.close()
-        return wrapper
 
+        return wrapper
 
     @session_manager
     def on_btn_confirm_clicked(self, event):
@@ -66,18 +71,14 @@ class ChooseDeanForm(Toplevel):
         self.withdraw()
         window = DeanForm(self, self.dbengine, obj)
         window.grab_set()
-        
-        
 
     def on_btn_back_clicked(self, event):
         self.on_closing(event)
-
 
     def on_closing(self, event=None):
         self.master.deiconify()
         self.destroy()
 
-    
     @session_manager
     def on_open(self, event=None):
         stmt = select(Faculty).order_by(Faculty.id)
@@ -93,14 +94,16 @@ class ChooseDeanForm(Toplevel):
         self.var_selected.set(objs[0].id)
         for idx, obj in enumerate(objs):
             text, value = (obj.id, obj.id)
-            self.rbuttons.append(Radiobutton(self, text=text, value=value, variable=self.var_selected))
+            self.rbuttons.append(
+                Radiobutton(self, text=text, value=value, variable=self.var_selected)
+            )
             entry = Label(self, text=obj.full_name)
-            
-            self.rbuttons[-1].grid(row=idx+1, column=0)
-            entry.grid(row=idx+1, column=1)
+
+            self.rbuttons[-1].grid(row=idx + 1, column=0)
+            entry.grid(row=idx + 1, column=1)
 
             self.tbl_elems.append(entry)
-        
+
         last_row = len(objs) + 8
 
         self.btn_confirm.grid(row=last_row, column=0)
@@ -108,10 +111,10 @@ class ChooseDeanForm(Toplevel):
 
 
 class DeanForm(Toplevel):
-    def __init__(self, master, engine:Engine, obj: Faculty):
+    def __init__(self, master, engine: Engine, obj: Faculty):
         super().__init__(master)
 
-        self.dbengine=engine
+        self.dbengine = engine
 
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
 
@@ -119,9 +122,9 @@ class DeanForm(Toplevel):
 
         self.current_obj = obj
 
-        self.form_types = [ CreateForm, ModifyForm, DeleteForm ]
-        self.op_names = [ "Создать", "Изменить", "Удалить" ]
-        self.models = [ Group, Student, Passport]
+        self.form_types = [CreateForm, ModifyForm, DeleteForm]
+        self.op_names = ["Создать", "Изменить", "Удалить"]
+        self.models = [Group, Student, Passport]
 
         self.h_frame = Frame(self)
         self.f_top = Frame(self)
@@ -133,7 +136,10 @@ class DeanForm(Toplevel):
         self.f_middle.pack(side=TOP, expand=1, fill=BOTH, pady=10)
         self.f_bot.pack(side=TOP, fill=X, pady=10)
 
-        self.lbl_head = Label(self.h_frame, text=f"Окно для сотрудника деканата {self.current_obj.id} факультета\nВыберите действие")
+        self.lbl_head = Label(
+            self.h_frame,
+            text=f"Окно для сотрудника деканата {self.current_obj.id} факультета\nВыберите действие",
+        )
         self.lbl_head.pack(side=TOP, expand=1, fill=X, padx=10)
 
         # Кнопки взаимодействия
@@ -159,15 +165,20 @@ class DeanForm(Toplevel):
             self.lbls[-1].pack(side=TOP, expand=1, fill=X)
             for j, op in enumerate(self.form_types):
                 self.goto_buttons.append(Button(self.frames[i], text=self.op_names[j]))
-                self.goto_buttons[-1].bind("<ButtonRelease>", lambda event, arg={"form_type": op, "cls": model, "obj": self.current_obj}: self.on_btn_goto_click(event, arg))
+                self.goto_buttons[-1].bind(
+                    "<ButtonRelease>",
+                    lambda event, arg={
+                        "form_type": op,
+                        "cls": model,
+                        "obj": self.current_obj,
+                    }: self.on_btn_goto_click(event, arg),
+                )
                 self.goto_buttons[-1].pack(side=TOP, expand=1, fill=X)
-
 
         # Общие кнопки
         self.btn_back = Button(self.f_bot, text="Назад")
         self.btn_back.bind("<ButtonRelease>", self.on_btn_back_clicked)
         self.btn_back.pack(side=BOTTOM, fill=X, padx=10)
-
 
     # Обработчик treeview
     def on_btn_goto_treeview_click(self, event):
@@ -175,19 +186,21 @@ class DeanForm(Toplevel):
         window = TreeViewRead(self, self.dbengine, Faculty, self.current_obj)
         window.grab_set()
 
-
     def on_btn_goto_click(self, event, arg):
         self.withdraw()
-        window = arg["form_type"](self, self.dbengine, cls=arg["cls"], obj=arg["obj"], cls2=arg["cls2"] if "cls2" in arg.keys() else None)
+        window = arg["form_type"](
+            self,
+            self.dbengine,
+            cls=arg["cls"],
+            obj=arg["obj"],
+            cls2=arg["cls2"] if "cls2" in arg.keys() else None,
+        )
         window.grab_set()
 
     # Общие обработчики
     def on_btn_back_clicked(self, event):
         self.on_closing(event)
 
-
     def on_closing(self, event=None):
         self.master.deiconify()
         self.destroy()
-
-        
