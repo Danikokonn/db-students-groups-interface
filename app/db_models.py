@@ -1,5 +1,5 @@
 from typing import List
-from sqlalchemy import Column, String, ForeignKey, LargeBinary, BigInteger, SmallInteger, Integer, Date, Table
+from sqlalchemy import Column, String, ForeignKey, BigInteger, SmallInteger, Integer, Date, Table
 from sqlalchemy.orm import Mapped, mapped_column, relationship, DeclarativeBase, synonym
 
 
@@ -41,6 +41,8 @@ class Faculty(Base):
 
     def __repr__(self) -> str:
         return f"Faculty(id={self.id!r}, full_name={self.full_name!r}, address={self.address!r}, deans_room_num={self.deans_room_num!r}, dean_full_name={self.dean_full_name!r})"
+
+    have_name = True
 
     def get_name(self):
         return f"{self.full_name}"
@@ -87,6 +89,7 @@ class Department(Base):
     def get_name(self):
         return f"{self.full_name}"
     
+    have_name = True
 
 CuratorsGroups = Table('curators_groups', Base.metadata,
     Column('personnel_number', SmallInteger, ForeignKey('curators.personnel_number')),
@@ -141,6 +144,8 @@ class Curator(Base):
         return f"Curator(personnel_number={self.personnel_number!r}, full_name={self.full_name!r}, job_title={self.job_title!r}, academic_degree={self.academic_degree!r}, phone_number={self.phone_number!r}, depart_id={self.depart_id!r})"
 
 
+    have_name = True
+
     def get_name(self):
         return f"{self.full_name}"
 
@@ -170,6 +175,7 @@ class Speciality(Base):
     def __repr__(self) -> str:
         return f"Speciality(code={self.code!r}, full_name={self.full_name!r})"
     
+    have_name = True
 
     def get_name(self):
         return f"{self.full_name}"
@@ -219,7 +225,8 @@ class Group(Base):
 
     def __repr__(self) -> str:
         return f"Group(id={self.id!r}, formation_year={self.formation_year!r}, study_year={self.study_year!r}, head_of_group_id={self.head_of_group_id!r}, speciality_code={self.speciality_code!r}, depart_id={self.depart_id!r})"
-
+    
+    have_name = True
 
     def get_name(self):
         return f"{self.id}"
@@ -291,6 +298,8 @@ class Student(Base):
         "group_id": "Номер группы",
     }
     
+    have_name = True
+
     id_attr = "id"
 
     def get_id(self):
@@ -332,11 +341,11 @@ class Passport(Base):
     def get_id(self):
         return self.document_number
     
+    have_name = False
 
-    def get_name(self):
-        return f"""Номер: {self.document_number}
-Серия: {self.series}
-Дата выдачи: {self.issue_date}
-Код подразделения: {self.depart_code}
-Адрес регистрации: {self.registration_address}
-"""
+    def get_values(self):
+        return [f"Номер: {self.document_number}",
+f"Серия: {self.series}",
+f"Дата выдачи: {self.issue_date}",
+f"Код подразделения: {self.depart_code}",
+f"Адрес регистрации: {self.registration_address}"]
