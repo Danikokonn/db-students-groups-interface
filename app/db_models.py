@@ -313,7 +313,7 @@ class Student(Base):
 class Passport(Base):
     __tablename__ = "passport_data"
 
-    desc = "Пасспорт"
+    desc = "Паспортные данные"
 
     document_number: Mapped[int] = mapped_column(Integer, primary_key=True)
     issue_date = mapped_column(Date, primary_key=True)
