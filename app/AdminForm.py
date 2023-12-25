@@ -2,20 +2,30 @@ from .CreateForm import *
 from .ModifyForm import *
 from .DeleteForm import *
 from .LinkForm import *
+from .TreeViewRead import TreeViewRead
+
 
 class AdminForm(Toplevel):
-    def __init__(self, master, engine:Engine):
+    def __init__(self, master, engine: Engine):
         super().__init__(master)
 
-        self.dbengine=engine
+        self.dbengine = engine
 
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
 
         self.title("Окно администратора")
 
-        self.form_types = [ CreateForm, ModifyForm, DeleteForm ]
-        self.op_names = [ "Создать", "Изменить", "Удалить" ]
-        self.models = [ Faculty, Department, Curator, Group, Student, Passport, Speciality ]
+        self.form_types = [CreateForm, ModifyForm, DeleteForm]
+        self.op_names = ["Создать", "Изменить", "Удалить"]
+        self.models = [
+            Faculty,
+            Department,
+            Curator,
+            Group,
+            Student,
+            Passport,
+            Speciality,
+        ]
 
         self.h_frame = Frame(self)
         self.f_top = Frame(self)
@@ -27,7 +37,10 @@ class AdminForm(Toplevel):
         self.f_bot.pack(side=TOP, expand=1, fill=BOTH, pady=10)
         self.b_frame.pack(side=TOP, fill=X, pady=10)
 
-        self.lbl_head = Label(self.h_frame, text="Окно администратора\nВыберите действие с каким либо объектом")
+        self.lbl_head = Label(
+            self.h_frame,
+            text="Окно администратора\nВыберите действие с каким либо объектом",
+        )
         self.lbl_head.pack(side=TOP, expand=1, fill=BOTH)
 
         self.btn_back = Button(self, text="Назад")
@@ -52,28 +65,62 @@ class AdminForm(Toplevel):
             self.lbls[-1].pack(side=TOP, expand=1, fill=X)
             for j, op in enumerate(self.form_types):
                 self.goto_buttons.append(Button(self.frames[i], text=self.op_names[j]))
-                self.goto_buttons[-1].bind("<ButtonRelease>", lambda event, arg={"form_type": op, "cls": model}: self.on_btn_goto_click(event, arg))
+                self.goto_buttons[-1].bind(
+                    "<ButtonRelease>",
+                    lambda event, arg={
+                        "form_type": op,
+                        "cls": model,
+                    }: self.on_btn_goto_click(event, arg),
+                )
                 self.goto_buttons[-1].pack(side=TOP, expand=1, fill=X)
 
         self.lbls.append(Label(self.frames[-1], text=f"Кураторы-Группы"))
         self.lbls[-1].pack(side=TOP, expand=1, fill=X)
         self.goto_buttons.append(Button(self.frames[-1], text="Связать"))
-        self.goto_buttons[-1].bind("<ButtonRelease>", lambda event, arg={"form_type": LinkForm, "cls": Curator, "cls2": Group}: self.on_btn_goto_click(event, arg))
+        self.goto_buttons[-1].bind(
+            "<ButtonRelease>",
+            lambda event, arg={
+                "form_type": LinkForm,
+                "cls": Curator,
+                "cls2": Group,
+            }: self.on_btn_goto_click(event, arg),
+        )
+        self.goto_buttons[-1].pack(side=TOP, expand=1, fill=X)
+        self.goto_buttons.append(Button(self.frames[-1], text="Отвязать"))
+        self.goto_buttons[-1].bind(
+            "<ButtonRelease>",
+            lambda event, arg={
+                "form_type": RemoveLinkForm,
+                "cls": Curator,
+                "cls2": Group,
+            }: self.on_btn_goto_click(event, arg),
+        )
         self.goto_buttons[-1].pack(side=TOP, expand=1, fill=X)
 
-        
+        self.goto_buttons[-1].pack(side=TOP, expand=1, fill=X)
+        self.goto_buttons.append(Button(self.h_frame, text="Посмотреть информацию о студентах по подразделениям"))
+        self.goto_buttons[-1].bind(
+            "<ButtonRelease>",
+            lambda event, arg={
+                "form_type": TreeViewRead,
+                "cls": Faculty,
+            }: self.on_btn_goto_click(event, arg),
+        )
+        self.goto_buttons[-1].pack(side=BOTTOM, expand=1, fill=X)
 
     def on_btn_goto_click(self, event, arg):
         self.withdraw()
-        window = arg["form_type"](self, self.dbengine, arg["cls"], arg["cls2"] if "cls2" in arg.keys() else None)
+        window = arg["form_type"](
+            self,
+            self.dbengine,
+            cls=arg["cls"],
+            cls2=arg["cls2"] if "cls2" in arg.keys() else None,
+        )
         window.grab_set()
-
 
     def on_btn_back_clicked(self, event):
         self.on_closing(event)
 
-
     def on_closing(self, event=None):
         self.master.deiconify()
         self.destroy()
-
